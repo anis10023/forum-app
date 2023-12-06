@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= forumName %> Search</title>
+  <link rel="stylesheet"  type="text/css" href="/main.css" />
+</head>
+<body>
+  <h1>Search the <%= forumName %> Forum</h1>
+  <form method="GET" action="/search">
+    <label for="query">Search for books:</label>
+    <input type="text" id="query" name="query" required>
+    <button type="submit">Search</button>
+  </form>
+  <p><a href="/">Home</a></p>
+</body>
+</html>
