@@ -1,21 +1,16 @@
-<!doctype html>
-<html>
-  <head>
-    <title><%=forumName%></title>
-    <link rel="stylesheet"  type="text/css" href="/main.css" />
-  </head>
-  <body>
-    <h1><%=forumName%></h1>
-    <h2>Search Result:</h2>
-    <% if (availableBooks.length > 0) { %>
-    <ul>
-        <% for (let book of availableBooks) { %>
-        <li><strong><%= book.name %></strong> £<%= book.price %></li>
-        <% } %>
-    </ul>
-    <% } else { %>
-    <p>No books found for your search.</p>
-    <% } %>
-    <p><a href="/">Home</a></p>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Results - <%= forumName %></title>
+</head>
+<body>
+  <h1>Search Results for '<%= searchQuery %>'</h1>
+  <ul>
+    <% searchResults.forEach(post => { %>
+      <li><%= post.title %> by <%= post.author %></li>
+    <% }); %>
+  </ul>
+</body>
 </html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posts - <%= forumName %></title>
+</head>
+<body>
+  <h1>Posts</h1>
+  <ul>
+    <% posts.forEach(post => { %>
+      <li>
+        <a href="/read-post/<%= post.post_id %>">
+          <%= post.title %>
+        </a> by <span class="postPage_userID"><%= post.user_id %></span> in <%= post.topic %> <span class="postPage_user">by <%= post.user %></span>
+      </li>
+    <% }); %>
+  </ul>
+</body>
+</html>

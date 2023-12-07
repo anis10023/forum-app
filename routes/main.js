@@ -10,14 +10,132 @@ module.exports = function (app, forumData) {
     res.render("about.ejs", forumData);
   });
 
-  // Posts route
-  app.get("/posts", function (req, res) {
-    res.render("about.ejs", forumData);
+  // Topics route
+  app.get("/topics", function (req, res) {
+    // Query database to get all topics
+    let sqlquery = "SELECT * FROM topics";
+
+    // Execute SQL query
+    db.query(sqlquery, (err, result) => {
+      if (err) {
+        return res.status(500).send("Error fetching data from the database.");
+      }
+      res.render("topics.ejs", { forumName: "Unity", topics: result });
+    });
   });
 
-  // Add New Posts route
-  app.get("/add-new-posts", function (req, res) {
-    res.render("about.ejs", forumData);
+  // Users route
+  app.get("/users", function (req, res) {
+    // Query database to get all users
+    let sqlquery = "SELECT * FROM users";
+
+    // Execute SQL query
+    db.query(sqlquery, (err, result) => {
+      if (err) {
+        return res.status(500).send("Error fetching data from the database.");
+      }
+      res.render("users.ejs", { forumName: "Unity", users: result });
+    });
+  });
+
+  // Posts route
+  app.get("/posts", function (req, res) {
+    // Query database to get all posts
+    let sqlquery = "SELECT * FROM posts";
+
+    // Execute SQL query
+    db.query(sqlquery, (err, result) => {
+      if (err) {
+        return res.status(500).send("Error fetching data from the database.");
+      }
+      res.render("posts.ejs", { forumName: "Unity", posts: result });
+    });
+  });
+
+  // Add New Post page (GET)
+  app.get("/add-new-post", function (req, res) {
+    // Fetch necessary data, e.g., users and topics
+    let sqlQueryUsers = "SELECT * FROM users";
+    let sqlQueryTopics = "SELECT * FROM topics";
+
+    db.query(sqlQueryUsers, (errUsers, users) => {
+      if (errUsers) {
+        console.error("Error fetching users:", errUsers);
+        users = [];
+      }
+
+      db.query(sqlQueryTopics, (errTopics, topics) => {
+        if (errTopics) {
+          console.error("Error fetching topics:", errTopics);
+          topics = [];
+        }
+
+        res.render("add-new-post.ejs", { forumName: "Unity", users, topics });
+      });
+    });
+  });
+
+  // Route to handle form submission for adding a new post (POST)
+  app.post("/add-new-post", function (req, res) {
+    // Extract data from the form submission
+    const title = req.body.title;
+    const content = req.body.content;
+    const userId = req.body.user;
+    const topicId = req.body.topic;
+
+    // Perform database insertion or any other required logic
+    // For example, assuming you have a 'posts' table
+    const sqlQuery =
+      "INSERT INTO posts (title, content, user_id, topic_id) VALUES (?, ?, ?, ?)";
+    const values = [title, content, userId, topicId];
+
+    db.query(sqlQuery, values, (err, result) => {
+      if (err) {
+        console.error("Error inserting post:", err);
+        return res.status(500).send("Error inserting post into the database.");
+      }
+
+      // Insert into user_topic to represent the association between the user and the topic
+      const sqlUserTopic =
+        "INSERT INTO user_topic (user_id, topic_id) VALUES (?, ?)";
+      const valuesUserTopic = [userId, topicId];
+
+      db.query(
+        sqlUserTopic,
+        valuesUserTopic,
+        (errUserTopic, resultUserTopic) => {
+          if (errUserTopic) {
+            console.error("Error inserting user_topic:", errUserTopic);
+            // Handle the error if needed
+          }
+
+          // Redirect the user to a different page after successful submission
+          res.redirect("/posts"); // Change "/posts" to the desired URL
+        }
+      );
+    });
+  });
+
+  // Read Post page (GET)
+  app.get("/read-post/:postId", function (req, res) {
+    const postId = req.params.postId;
+
+    // Fetch the specific post based on the postId
+    const sqlQuery = "SELECT * FROM posts WHERE post_id = ?";
+    db.query(sqlQuery, [postId], (err, result) => {
+      if (err) {
+        console.error("Error fetching post:", err);
+        return res.status(500).send("Error fetching post from the database.");
+      }
+
+      if (result.length === 0) {
+        // Post not found
+        return res.status(404).send("Post not found.");
+      }
+
+      const post = result[0];
+      res.render("read-post.ejs", { forumName: "Unity", post });
+    });
   });
 
   // Search route
@@ -30,8 +148,8 @@ module.exports = function (app, forumData) {
       return res.render("search.ejs", { forumName: "Unity" });
     }
 
-    // Perform a database query to find books matching the search query
-    let sqlquery = "SELECT * FROM posts WHERE name LIKE ?";
+    // Perform a database query to find posts matching the search query
+    let sqlquery = "SELECT * FROM posts WHERE title LIKE ?";
     let searchPattern = `%${searchQuery}%`;
 
     db.query(sqlquery, [searchPattern], (err, result) => {
@@ -40,86 +158,14 @@ module.exports = function (app, forumData) {
         return res.status(500).send("Error fetching data from the database.");
       }
 
-      // Render the search results page with the matching books
+      // Render the search results page with the matching posts
       res.render("search-result.ejs", {
         forumName: "Unity",
-        availablePosts: result,
+        searchQuery: searchQuery,
+        searchResults: result,
       });
     });
   });
 
-  // Register route
-  app.get("/register", function (req, res) {
-    res.render("register.ejs", forumData);
-  });
-
-  // Registered route
-  app.post("/registered", function (req, res) {
-    res.send(
-      " Hello " +
-        req.body.first +
-        " " +
-        req.body.last +
-        " you are now registered!  We will send an email to you at " +
-        req.body.email
-    );
-  });
-
-  // List route
-  app.get("/list", function (req, res) {
-    // Query database to get all the books
-    let sqlquery = "SELECT * FROM books";
-
-    // Execute SQL query
-    db.query(sqlquery, (err, result) => {
-      if (err) {
-        res.redirect("./");
-      }
-      let newData = Object.assign({}, forumData, { availablePosts: result });
-      console.log(newData);
-      res.render("list.ejs", newData);
-    });
-  });
-
-  // Addbook route
-  app.get("/addbook", function (req, res) {
-    res.render("addbook.ejs", forumData);
-  });
-
-  // Bookadded route
-  app.post("/bookadded", function (req, res) {
-    // Saving data in the database
-    let sqlquery = "INSERT INTO books (name, price) VALUES (?, ?)";
-
-    // Execute SQL query
-    let newrecord = [req.body.name, req.body.price];
-    db.query(sqlquery, newrecord, (err, result) => {
-      if (err) {
-        return console.error(err.message);
-      } else {
-        res.send(
-          " This book is added to database, book name: " +
-            req.body.name +
-            " price " +
-            req.body.price
-        );
-      }
-    });
-  });
-
-  // Bargainbooks route
-  app.get("/bargainbooks", function (req, res) {
-    // Query database to get all the books with price less than 20
-    let sqlquery = "SELECT * FROM books WHERE price < 20";
-
-    // Execute SQL query
-    db.query(sqlquery, (err, result) => {
-      if (err) {
-        res.redirect("./");
-      }
-      let newData = Object.assign({}, forumData, { availablePosts: result });
-      console.log(newData);
-      res.render("bargainbooks.ejs", newData);
-    });
-  });
+  // ... Add routes for user registration, login, and authentication as needed
 };

@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title><%= forumName %> Search</title>
-  <link rel="stylesheet"  type="text/css" href="/main.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search - <%= forumName %></title>
 </head>
 <body>
-  <h1>Search the <%= forumName %> Forum</h1>
-  <form method="GET" action="/search">
-    <label for="query">Search for books:</label>
+  <h1>Search</h1>
+  <form action="/search" method="get">
+    <label for="query">Search Query:</label>
     <input type="text" id="query" name="query" required>
+    
     <button type="submit">Search</button>
   </form>
-  <p><a href="/">Home</a></p>
 </body>
 </html>
